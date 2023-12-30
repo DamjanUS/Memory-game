@@ -57,6 +57,9 @@ module.exports = {
                     'sass-loader',
                     'postcss-loader'
                 ]
+            }, {
+                test: /\.jpg/,
+                type: 'asset/resource'
             }
         ]
     },
@@ -79,5 +82,8 @@ module.exports = {
           new CssMinimizerPlugin(),
         ],
       },
+      output: {
+        assetModuleFilename: 'images/[hash][ext][query]'
+      }
 
 }

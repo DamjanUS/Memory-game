@@ -98,6 +98,7 @@
               :class="getTextColor(playedgame.name)"
               >{{ playedgame.score }}</span
             >
+            <button @click="startGame()">Рестарт</button>
           </div>
         </div>
       </div>
@@ -106,6 +107,15 @@
 </template>
 
 <script>
+import * as bear from '../assets/imgs/bear.jpg';
+import * as deer from '../assets/imgs/deer.jpg';
+import * as eagle from '../assets/imgs/eagle.jpg';
+import * as elephants from '../assets/imgs/elephants.jpg';
+import * as lion from '../assets/imgs/lion.jpg';
+import * as monkey from '../assets/imgs/monkey.jpg';
+import * as squirrel from '../assets/imgs/squirrel.jpg';
+import * as stork from '../assets/imgs/stork.jpg';
+
 const shuffle = (array) =>
   array
     .map((a) => ({ sort: Math.random(), value: a }))
@@ -119,14 +129,14 @@ export default {
   data() {
     return {
       images: [
-        "/public/imgs/lion.jpg?text=?",
-        "/public/imgs/eagle.jpg?text=?",
-        "/public/imgs/bear.jpg?text=?",
-        "/public/imgs/monkey.jpg?text=?",
-        "/public/imgs/stork.jpg?text=?",
-        "/public/imgs/squirrel.jpg?text=?",
-        "/public/imgs/deer.jpg?text=?",
-        "/public/imgs/elephants.jpg?text=?",
+        lion,
+        eagle,
+        bear,
+        monkey,
+        stork,
+        squirrel,
+        deer,
+        elephants,
       ],
       imageHidden: "https://via.placeholder.com/100x100.png?text=?",
       currentTeam: "",
@@ -136,6 +146,7 @@ export default {
         misses: 0,
       },
       leaderboard: [],
+      summaryResults: [],
       round: 1,
       summaryMode: false,
     };
@@ -226,10 +237,12 @@ export default {
       }
 
       this.summaryMode = true;
-      this.startGame();
     },
 
     startGame() {
+      if (this.currentTeam === "Hamilton") {
+        this.round++;
+      }
       this.currentTeam = this.currentTeam === "Zimz" ? "Hamilton" : "Zimz";
       this.currentGame = {
         player: this.currentTeam,
@@ -237,10 +250,6 @@ export default {
         misses: 0,
       };
       this.generateCombs();
-
-      if (this.round % 2 === 0) {
-        this.round++;
-      }
       this.summaryMode = false;
     },
 
@@ -248,7 +257,8 @@ export default {
       this.currentGame.combs = shuffle(
         this.images
           .map((image, idx) => {
-            const comb = { id: idx, image, status: "ready", hidden: false };
+            const imagex = image;
+            const comb = { id: idx, image: imagex.default, status: "ready", hidden: false };
             return [comb, comb];
           })
           .flat()
