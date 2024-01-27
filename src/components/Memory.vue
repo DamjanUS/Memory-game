@@ -1,0 +1,402 @@
+<template>
+  <div class="flex flex-col pt-1">
+    <div class="flex justify-between px-1">
+      <div class="memory-cont">
+        <div
+          v-for="(comb, idx) in currentGame.combs"
+          :key="idx"
+          class="memory-card"
+          @click="makeMove(comb)"
+        >
+          <img
+            :src="!comb.hidden ? comb.image : imageHidden"
+            :class="[comb.status]"
+          />
+        </div>
+      </div>
+      <span class="px-1"></span>
+      <div class="flex flex-col">
+        <div class="flex justify-center items-center">
+          <span
+            class="px-2 py-1 flex-1 whitespace-nowrap text-yellow-300 font-serif border border-t-4 border-yellow-300 mr-2 mt-2 text-2xl"
+            >Поени: {{ score }}
+          </span>
+          <span
+            class="px-2 py-1 flex-1 whitespace-nowrap text-yellow-300 font-serif border border-t-4 border-yellow-300 mr-2 mt-2 text-2xl"
+          >
+            Време: {{ timer }}
+          </span>
+          <span
+            class="px-2 py-1 font-bold text-yellow-300 border border-t-4 border-yellow-300 font-serif mr-5 mt-2 text-2xl"
+            >Тим: {{ currentTeam }}</span
+          >
+        </div>
+        <br />
+        <div class="leaderboard flex flex-col flex-1">
+          <div class="flex">
+            <span
+              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl"
+              >Рунда</span
+            >
+            <span
+              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl"
+              >Тим</span
+            >
+            <span
+              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl px-1"
+              >Резултат</span
+            >
+            <span
+              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-5 text-2xl"
+              >Поени</span
+            >
+          </div>
+          <div
+            v-for="(playedgame, idx) in sortedLeaderboard"
+            :key="idx"
+            class="flex"
+          >
+            <span
+              class="flex-1 mt-2 text-2xl"
+              :class="getTextColor(playedgame.name)"
+              >{{ playedgame.round }}</span
+            >
+            <span
+              class="flex-1 mt-2 text-2xl"
+              :class="getTextColor(playedgame.name)"
+              >{{ playedgame.name }}</span
+            >
+            <span
+              class="flex-1 mt-2 text-2xl"
+              :class="getTextColor(playedgame.name)"
+              >{{ playedgame.won ? "Победа" : "Пораз" }}</span
+            >
+            <span
+              class="flex-1 mt-2 mr-5 text-2xl"
+              :class="getTextColor(playedgame.name)"
+              >{{ playedgame.score }}</span
+            >
+          </div>
+          <div class=" mt-2 border-t-2 border-yellow-300" v-if="summaryMode">
+            <div style="display: flex flex direction:row  ;">
+              <div class="flex justify-between">
+                <span
+                  class="flex-1 mt-2 ml-6 text-2xl"
+                  :class="getTextColor(summaryMode.zimzName)"
+                  >{{ summaryMode.zimzName }}</span
+                >
+                <span
+                  class="flex-1 mt-2 text-2xl"
+                  :class="getTextColor(summaryMode.zimzName)"
+                  >{{ summaryMode.zimzResult }}</span
+                >
+                <span
+                  class="flex-1 mt-2  text-2xl"
+                  :class="getTextColor(summaryMode.zimzName)"
+                  >{{ summaryMode.zimzScore }}</span
+                >
+              </div>
+              <div class="flex justify-between">
+                <span
+                  class="flex-1 ml-6 mt-2 text-2xl"
+                  :class="getTextColor(summaryMode.hamiltonName)"
+                  >{{ summaryMode.hamiltonName }}</span
+                >
+                <span
+                  class="flex-1 mt-2 text-2xl"
+                  :class="getTextColor(summaryMode.hamiltonName)"
+                  >{{ summaryMode.hamiltonResult }}</span
+                >
+                <span
+                  class="flex-1 mt-2 text-2xl"
+                  :class="getTextColor(summaryMode.hamiltonName)"
+                  >{{ summaryMode.hamiltonScore }}</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import * as bear from "../assets/imgs/bear.jpg";
+import * as deer from "../assets/imgs/deer.jpg";
+import * as eagle from "../assets/imgs/eagle.jpg";
+import * as elephants from "../assets/imgs/elephants.jpg";
+import * as lion from "../assets/imgs/lion.jpg";
+import * as monkey from "../assets/imgs/monkey.jpg";
+import * as squirrel from "../assets/imgs/squirrel.jpg";
+import * as stork from "../assets/imgs/stork.jpg";
+
+const shuffle = (array) =>
+  array
+    .map((a) => ({ sort: Math.random(), value: a }))
+    .sort((a, b) => a.sort - b.sort)
+    .map((a) => a.value);
+
+export default {
+  data() {
+    return {
+      images: [lion, eagle, bear, monkey, stork, squirrel, deer, elephants],
+      imageHidden: "https://via.placeholder.com/100x100.png?text=?",
+      currentTeam: "",
+      roundsCompleted: {
+        Zimz: 0,
+        Hamilton: 0,
+      },
+      currentGame: {
+        player: "",
+        combs: [],
+        misses: 0,
+      },
+      leaderboard: [],
+      summaryResults: [],
+      round: 1,
+      summaryMode: null,
+      timer: 15,
+    };
+  },
+  computed: {
+    getTextColor() {
+      return function(teamName) {
+        return teamName === "Zimz" ? "text-red-500" : "text-green-500";
+      };
+    },
+    score() {
+      return (
+        this.currentGame.combs.filter((x) => x.status === "hit").length / 2
+      );
+    },
+
+    won() {
+      return this.score === this.currentGame.combs.length / 2;
+    },
+    lost() {
+      return this.timer === 0;
+    },
+    gameover() {
+      return this.won || this.lost;
+    },
+    sortedLeaderboard() {
+      return this.leaderboard.sort((plA, plB) => {
+        if (plA.round !== plB.round) return plA.round - plB.round;
+        if (plA.won !== plB.won) return plB.won - plA.won;
+        return plB.round - plA.round;
+      });
+    },
+  },
+  watch: {
+    gameover(val) {
+      if (val) {
+        this.sortedLeaderboard.push({
+          name: this.currentGame.player,
+          won: this.won,
+          score: this.score,
+          lives: this.lives,
+          round: this.round,
+        });
+
+        this.currentGame.combs.forEach((comb) => {
+          if (comb.status === "hit" && !comb.hidden) {
+            comb.status = "ready";
+            comb.hidden = true;
+          }
+        });
+
+        if (val) {
+          const playerName = this.currentGame.player;
+          this.roundsCompleted[playerName]++;
+
+          if (
+            this.roundsCompleted.Zimz === 5 &&
+            this.roundsCompleted.Hamilton === 5
+          ) {
+            this.showSummary();
+          } else {
+            setTimeout(() => {
+              this.startGame();
+            }, 3000);
+          }
+        }
+      }
+    },
+  },
+  methods: {
+    preloadImages() {
+      const imagesToPreload = [
+        lion,
+        eagle,
+        bear,
+        monkey,
+        stork,
+        squirrel,
+        deer,
+        elephants,
+      ];
+
+      imagesToPreload.forEach((image) => {
+        const img = new Image();
+        img.src = image.default;
+      });
+    },
+    startTimer() {
+      this.timer = 15;
+      this.timerInterval = setInterval(() => {
+        this.timer--;
+        if (this.timer === 0) {
+          this.stopTimer();
+        }
+      }, 1000);
+    },
+
+    stopTimer() {
+      clearInterval(this.timerInterval);
+    },
+    showSummary() {
+      const zimzTotalScore = this.sortedLeaderboard
+        .filter((player) => player.name === "Zimz")
+        .reduce((acc, player) => acc + player.score, 0);
+
+      const hamiltonTotalScore = this.sortedLeaderboard
+        .filter((player) => player.name === "Hamilton")
+        .reduce((acc, player) => acc + player.score, 0);
+
+      console.log("Zimz Total Score:", zimzTotalScore);
+      console.log("Hamilton Total Score:", hamiltonTotalScore);
+
+      let zimzResult, hamiltonResult;
+
+      if (zimzTotalScore > hamiltonTotalScore) {
+        zimzResult = "Победа";
+        hamiltonResult = "Пораз";
+      } else if (zimzTotalScore < hamiltonTotalScore) {
+        zimzResult = "Пораз";
+        hamiltonResult = "Победа";
+      } else {
+        zimzResult = hamiltonResult = "Изедначено";
+      }
+
+      console.log("Zimz Result:", zimzResult);
+      console.log("Hamilton Result:", hamiltonResult);
+
+      this.summaryMode = {
+        zimzName: "Zimz", // Assuming these are the player names
+        hamiltonName: "Hamilton", // Assuming these are the player names
+        zimzResult,
+        hamiltonResult,
+        zimzScore: zimzTotalScore,
+        hamiltonScore: hamiltonTotalScore,
+      };
+    },
+
+    startGame() {
+      if (this.currentTeam === "Hamilton") {
+        this.round++;
+      }
+      this.currentTeam = this.currentTeam === "Zimz" ? "Hamilton" : "Zimz";
+      this.currentGame = {
+        player: this.currentTeam,
+        combs: [],
+        misses: 0,
+      };
+      this.generateCombs();
+      this.startTimer();
+      this.summaryMode = null;
+    },
+    generateCombs() {
+      this.currentGame.combs = shuffle(
+        this.images
+          .map((image, idx) => {
+            const imagex = image;
+            const comb = {
+              id: idx,
+              image: imagex.default,
+              status: "ready",
+              hidden: false,
+            };
+            return [comb, comb];
+          })
+          .flat()
+      ).map((x, idx) => ({ ...x, idx }));
+
+      setTimeout(() => {
+        this.currentGame.combs.forEach((comb) => {
+          comb.hidden = true;
+        });
+      }, 3000);
+    },
+    makeMove(comb) {
+      if (this.gameover) return;
+      if (["hit", "miss"].includes(comb.status)) return;
+
+      const curSelected = this.currentGame.combs.find(
+        (x) => x.status === "selected"
+      );
+      if (!curSelected) {
+        comb.status = "selected";
+        comb.hidden = false;
+      } else {
+        if (curSelected.idx !== comb.idx) {
+          const resultStatus = comb.id === curSelected.id ? "hit" : "miss";
+          comb.status = resultStatus;
+          comb.hidden = false;
+          curSelected.status = resultStatus;
+          curSelected.hidden = false;
+
+          if (resultStatus === "miss") {
+            this.currentGame.misses += 1;
+            setTimeout(() => {
+              comb.status = "ready";
+              comb.hidden = true;
+              curSelected.status = "ready";
+              curSelected.hidden = true;
+            }, 1000);
+          } else {
+            this.currentGame.misses = Math.max(this.currentGame.misses - 1, 0);
+          }
+        } else {
+          comb.status = "ready";
+        }
+      }
+    },
+  },
+  created() {
+    this.preloadImages();
+    this.startGame();
+  },
+};
+</script>
+
+<style lang="postcss">
+body {
+  @apply bg-blue-800 text-xl font-bold font-serif;
+}
+
+.memory-cont {
+  @apply flex justify-between items-center flex-wrap w-1/2 h-1/2;
+}
+
+.memory-card {
+  @apply w-1/4 h-1/4 pr-0.5 pb-0.5;
+
+  img {
+    @apply w-full h-full border-2;
+
+    &.ready {
+      @apply border-gray-600;
+    }
+    &.selected {
+      @apply border-purple-600;
+    }
+    &.hit {
+      @apply border-green-600;
+    }
+    &.miss {
+      @apply border-red-600;
+    }
+  }
+}
+</style>
