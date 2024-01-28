@@ -141,7 +141,7 @@ export default {
   data() {
     return {
       images: [lion, eagle, bear, monkey, stork, squirrel, deer, elephants],
-      imageHidden: "https://via.placeholder.com/100x100.png?text=?",
+      imageHidden: "https://via.placeholder.com/100x100.png?text=A",
       currentTeam: "",
       roundsCompleted: {
         Zimz: 0,
@@ -157,6 +157,7 @@ export default {
       round: 1,
       summaryMode: null,
       timer: 15,
+      timerRunning: false,
     };
   },
   computed: {
@@ -242,7 +243,19 @@ export default {
         img.src = image.default;
       });
     },
+    handleKeyDown(event) {
+      if (event.key === "Enter") {
+        if (!this.timerRunning) {
+          this.startTimer();
+        }
+
+        if (!this.combsGenerated) {
+          this.generateCombs();
+        }
+      }
+    },
     startTimer() {
+      this.timerRunning = true;
       this.timer = 15;
       this.timerInterval = setInterval(() => {
         this.timer--;
@@ -254,6 +267,15 @@ export default {
 
     stopTimer() {
       clearInterval(this.timerInterval);
+      this.timerRunning = false;
+    },
+
+    created() {
+      document.addEventListener("keydown", this.handleKeyDown);
+    },
+
+    beforeDestroy() {
+      document.removeEventListener("keydown", this.handleKeyDown);
     },
     showSummary() {
       const zimzTotalScore = this.sortedLeaderboard
@@ -283,8 +305,8 @@ export default {
       console.log("Hamilton Result:", hamiltonResult);
 
       this.summaryMode = {
-        zimzName: "Zimz", // Assuming these are the player names
-        hamiltonName: "Hamilton", // Assuming these are the player names
+        zimzName: "Zimz",
+        hamiltonName: "Hamilton",
         zimzResult,
         hamiltonResult,
         zimzScore: zimzTotalScore,
@@ -307,6 +329,8 @@ export default {
       this.summaryMode = null;
     },
     generateCombs() {
+      console.log("Combs generated");
+
       this.currentGame.combs = shuffle(
         this.images
           .map((image, idx) => {
@@ -327,7 +351,9 @@ export default {
           comb.hidden = true;
         });
       }, 3000);
+      this.combsGenerated = true;
     },
+
     makeMove(comb) {
       if (this.gameover) return;
       if (["hit", "miss"].includes(comb.status)) return;
