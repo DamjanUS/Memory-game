@@ -9,7 +9,7 @@
           @click="makeMove(comb)"
         >
           <img
-            :src="!comb.hidden ? comb.image : imageHidden"
+            :src="!comb.hidden ? comb.image : imageHidden(comb.letter)"
             :class="[comb.status]"
           />
         </div>
@@ -141,7 +141,25 @@ export default {
   data() {
     return {
       images: [lion, eagle, bear, monkey, stork, squirrel, deer, elephants],
-      imageHidden: "https://via.placeholder.com/100x100.png?text=A",
+      letters: [
+        "А",
+        "Б",
+        "В",
+        "Г",
+        "Д",
+        "Ѓ",
+        "Е",
+        "Ж",
+        "З",
+        "Ѕ",
+        "И",
+        "Ј",
+        "К",
+        "Л",
+        "Љ",
+        "М",
+      ],
+      imageHiddenBase: "https://via.placeholder.com/100x100.png?text=",
       currentTeam: "",
       roundsCompleted: {
         Zimz: 0,
@@ -187,6 +205,14 @@ export default {
         if (plA.won !== plB.won) return plB.won - plA.won;
         return plB.round - plA.round;
       });
+    },
+    imageHidden() {
+      return function(letter) {
+        return this.imageHiddenBase + letter;
+      };
+    },
+    sortedLetters() {
+      return [...this.letters].sort();
     },
   },
   watch: {
@@ -329,8 +355,6 @@ export default {
       this.summaryMode = null;
     },
     generateCombs() {
-      console.log("Combs generated");
-
       this.currentGame.combs = shuffle(
         this.images
           .map((image, idx) => {
@@ -340,6 +364,7 @@ export default {
               image: imagex.default,
               status: "ready",
               hidden: false,
+              letter: this.sortedLetters[idx],
             };
             return [comb, comb];
           })
