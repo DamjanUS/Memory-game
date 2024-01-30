@@ -138,6 +138,13 @@ const shuffle = (array) =>
     .map((a) => a.value);
 
 export default {
+  mounted() {
+    this.preloadImages();
+    window.addEventListener("keyup", this.handleKeyDown);
+  },
+  beforeDestroy() {
+    window.removeEventListener("keyup", this.handleKeyDown);
+  },
   data() {
     return {
       images: [lion, eagle, bear, monkey, stork, squirrel, deer, elephants],
@@ -271,12 +278,8 @@ export default {
     },
     handleKeyDown(event) {
       if (event.key === "Enter") {
-        if (!this.timerRunning) {
-          this.startTimer();
-        }
-
-        if (!this.combsGenerated) {
-          this.generateCombs();
+        if (!this.timerRunning && !this.combsGenerated) {
+          this.startGame();
         }
       }
     },
@@ -296,13 +299,6 @@ export default {
       this.timerRunning = false;
     },
 
-    created() {
-      document.addEventListener("keydown", this.handleKeyDown);
-    },
-
-    beforeDestroy() {
-      document.removeEventListener("keydown", this.handleKeyDown);
-    },
     showSummary() {
       const zimzTotalScore = this.sortedLeaderboard
         .filter((player) => player.name === "Zimz")
@@ -355,7 +351,7 @@ export default {
       this.summaryMode = null;
     },
     generateCombs() {
-      this.currentGame.combs = shuffle(
+      const combs = shuffle(
         this.images
           .map((image, idx) => {
             const imagex = image;
@@ -364,12 +360,18 @@ export default {
               image: imagex.default,
               status: "ready",
               hidden: false,
-              letter: this.sortedLetters[idx],
             };
             return [comb, comb];
           })
           .flat()
       ).map((x, idx) => ({ ...x, idx }));
+
+      this.currentGame.combs = combs.map((comb, idx) => {
+        return {
+          ...comb,
+          letter: this.sortedLetters[idx],
+        };
+      });
 
       setTimeout(() => {
         this.currentGame.combs.forEach((comb) => {
@@ -413,10 +415,6 @@ export default {
         }
       }
     },
-  },
-  created() {
-    this.preloadImages();
-    this.startGame();
   },
 };
 </script>
