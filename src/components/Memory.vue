@@ -140,8 +140,9 @@ const shuffle = (array) =>
 export default {
   mounted() {
     this.preloadImages();
-    window.addEventListener("keyup", this.handleKeyDown);
+    this.generateCombs(), window.addEventListener("keyup", this.handleKeyDown);
   },
+
   beforeDestroy() {
     window.removeEventListener("keyup", this.handleKeyDown);
   },
@@ -276,10 +277,19 @@ export default {
         img.src = image.default;
       });
     },
+    revealCombs() {
+      if (this.currentGame.combs) {
+        this.currentGame.combs.forEach((comb) => {
+          comb.hidden = false;
+        });
+      }
+    },
+
     handleKeyDown(event) {
       if (event.key === "Enter") {
-        if (!this.timerRunning && !this.combsGenerated) {
+        if (!this.timerRunning) {
           this.startGame();
+          this.revealCombs(); // Call revealCombs when Enter is pressed
         }
       }
     },
@@ -359,7 +369,7 @@ export default {
               id: idx,
               image: imagex.default,
               status: "ready",
-              hidden: false,
+              hidden: true,
             };
             return [comb, comb];
           })
