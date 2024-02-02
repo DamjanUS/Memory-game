@@ -35,19 +35,19 @@
         <div class="leaderboard flex flex-col flex-1">
           <div class="flex">
             <span
-              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl"
+              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl w-32"
               >Рунда</span
             >
             <span
-              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl"
+              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl w-32"
               >Тим</span
             >
             <span
-              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl px-1"
+              class="flex-1  text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl px-1 w-32"
               >Резултат</span
             >
             <span
-              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-5 text-2xl"
+              class="flex-1 p text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-5 text-2xl w-32"
               >Поени</span
             >
           </div>
@@ -140,9 +140,8 @@ const shuffle = (array) =>
 export default {
   mounted() {
     this.preloadImages();
-    this.generateCombs(), window.addEventListener("keyup", this.handleKeyDown);
+    window.addEventListener("keyup", this.handleKeyDown);
   },
-
   beforeDestroy() {
     window.removeEventListener("keyup", this.handleKeyDown);
   },
@@ -277,19 +276,10 @@ export default {
         img.src = image.default;
       });
     },
-    revealCombs() {
-      if (this.currentGame.combs) {
-        this.currentGame.combs.forEach((comb) => {
-          comb.hidden = false;
-        });
-      }
-    },
-
     handleKeyDown(event) {
       if (event.key === "Enter") {
-        if (!this.timerRunning) {
+        if (!this.timerRunning && !this.combsGenerated) {
           this.startGame();
-          this.revealCombs(); // Call revealCombs when Enter is pressed
         }
       }
     },
@@ -369,7 +359,7 @@ export default {
               id: idx,
               image: imagex.default,
               status: "ready",
-              hidden: true,
+              hidden: false,
             };
             return [comb, comb];
           })
