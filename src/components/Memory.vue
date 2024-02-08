@@ -140,11 +140,10 @@ const shuffle = (array) =>
 export default {
   mounted() {
     this.preloadImages();
+    this.generateCombs();
     window.addEventListener("keyup", this.handleKeyDown);
   },
-  beforeDestroy() {
-    window.removeEventListener("keyup", this.handleKeyDown);
-  },
+
   data() {
     return {
       images: [lion, eagle, bear, monkey, stork, squirrel, deer, elephants],
@@ -169,8 +168,8 @@ export default {
       imageHiddenBase: "https://via.placeholder.com/100x100.png?text=",
       currentTeam: "",
       roundsCompleted: {
-        Zimz: 0,
-        Hamilton: 0,
+        Играч1: 0,
+        Играч2: 0,
       },
       currentGame: {
         player: "",
@@ -188,7 +187,7 @@ export default {
   computed: {
     getTextColor() {
       return function(teamName) {
-        return teamName === "Zimz" ? "text-red-500" : "text-green-500";
+        return teamName === "Играч1" ? "text-red-500" : "text-green-500";
       };
     },
     score() {
@@ -245,8 +244,8 @@ export default {
           this.roundsCompleted[playerName]++;
 
           if (
-            this.roundsCompleted.Zimz === 5 &&
-            this.roundsCompleted.Hamilton === 5
+            this.roundsCompleted.Играч1 === 5 &&
+            this.roundsCompleted.Играч2 === 5
           ) {
             this.showSummary();
           } else {
@@ -276,10 +275,19 @@ export default {
         img.src = image.default;
       });
     },
+    revealCombs() {
+      if (this.currentGame.combs) {
+        this.currentGame.combs.forEach((comb) => {
+          comb.hidden = false;
+        });
+      }
+    },
+
     handleKeyDown(event) {
       if (event.key === "Enter") {
-        if (!this.timerRunning && !this.combsGenerated) {
+        if (!this.timerRunning) {
           this.startGame();
+          this.revealCombs();
         }
       }
     },
@@ -301,11 +309,11 @@ export default {
 
     showSummary() {
       const zimzTotalScore = this.sortedLeaderboard
-        .filter((player) => player.name === "Zimz")
+        .filter((player) => player.name === "Играч1")
         .reduce((acc, player) => acc + player.score, 0);
 
       const hamiltonTotalScore = this.sortedLeaderboard
-        .filter((player) => player.name === "Hamilton")
+        .filter((player) => player.name === "Играч2")
         .reduce((acc, player) => acc + player.score, 0);
 
       console.log("Zimz Total Score:", zimzTotalScore);
@@ -327,8 +335,8 @@ export default {
       console.log("Hamilton Result:", hamiltonResult);
 
       this.summaryMode = {
-        zimzName: "Zimz",
-        hamiltonName: "Hamilton",
+        zimzName: "Играч1",
+        hamiltonName: "Играч2",
         zimzResult,
         hamiltonResult,
         zimzScore: zimzTotalScore,
@@ -337,10 +345,10 @@ export default {
     },
 
     startGame() {
-      if (this.currentTeam === "Hamilton") {
+      if (this.currentTeam === "Играч2") {
         this.round++;
       }
-      this.currentTeam = this.currentTeam === "Zimz" ? "Hamilton" : "Zimz";
+      this.currentTeam = this.currentTeam === "Играч1" ? "Играч2" : "Играч1";
       this.currentGame = {
         player: this.currentTeam,
         combs: [],
