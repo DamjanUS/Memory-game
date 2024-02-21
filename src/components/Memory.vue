@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col pt-1">
-    <div class="flex justify-between px-1">
+    <div class="flex justify-between px-1 gap-4">
       <div class="memory-cont">
         <div
           v-for="(comb, idx) in currentGame.combs"
@@ -14,40 +14,40 @@
           />
         </div>
       </div>
-      <span class="px-1"></span>
-      <div class="flex flex-col">
+      <!-- <span class="px-1"></span> -->
+      <div class="flex flex-col flex-1">
         <div class="flex justify-center items-center">
-          <span
+          <!-- <span
             class="px-2 py-1 flex-1 whitespace-nowrap text-yellow-300 font-serif border border-t-4 border-yellow-300 mr-2 mt-2 text-2xl"
             >Поени: {{ score }}
-          </span>
+          </span> -->
           <span
-            class="px-2 py-1 flex-1 whitespace-nowrap text-yellow-300 font-serif border border-t-4 border-yellow-300 mr-2 mt-2 text-2xl"
+            class="px-2 py-1 flex-1 whitespace-nowrap text-yellow-300 text-5xl font-serif border border-t-4 border-yellow-300 mt-2 text-2xl"
           >
             Време: {{ timer }}
           </span>
           <span
-            class="px-2 py-1 font-bold text-yellow-300 border border-t-4 border-yellow-300 font-serif mr-5 mt-2 text-2xl"
+            class="px-2 py-1 flex-1 whitespace-nowrap text-yellow-300 text-5xl font-serif border border-t-4 border-yellow-300 mt-2 text-2xl"
             >Тим: {{ currentTeam }}</span
           >
         </div>
         <br />
         <div class="leaderboard flex flex-col flex-1">
-          <div class="flex">
+          <div class="flex gap-2">
             <span
-              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl w-32"
+              class="flex-1 text-yellow-300 text-3xl border border-b-4 border-yellow-300 font-serif text-2xl w-32"
               >Рунда</span
             >
             <span
-              class="flex-1 text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl w-32"
+              class="flex-1 text-yellow-300 text-3xl border border-b-4 border-yellow-300 font-serif text-2xl w-32"
               >Тим</span
             >
-            <span
+            <!-- <span
               class="flex-1  text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-2 text-2xl px-1 w-32"
               >Резултат</span
-            >
+            > -->
             <span
-              class="flex-1 p text-yellow-300 border border-b-4 border-yellow-300 font-serif mr-5 text-2xl w-32"
+              class="flex-1 p text-yellow-300 text-3xl border border-b-4 border-yellow-300 font-serif text-2xl w-32"
               >Поени</span
             >
           </div>
@@ -57,22 +57,22 @@
             class="flex"
           >
             <span
-              class="flex-1 mt-2 text-2xl"
+              class="flex-1 mt-2 text-3xl"
               :class="getTextColor(playedgame.name)"
               >{{ playedgame.round }}</span
             >
             <span
-              class="flex-1 mt-2 text-2xl"
+              class="flex-1 mt-2 text-3xl"
               :class="getTextColor(playedgame.name)"
               >{{ playedgame.name }}</span
             >
-            <span
+            <!-- <span
               class="flex-1 mt-2 text-2xl"
               :class="getTextColor(playedgame.name)"
               >{{ playedgame.won ? "Победа" : "Пораз" }}</span
-            >
+            > -->
             <span
-              class="flex-1 mt-2 mr-5 text-2xl"
+              class="flex-1 mt-2 mr-5 text-3xl"
               :class="getTextColor(playedgame.name)"
               >{{ playedgame.score }}</span
             >
@@ -137,6 +137,8 @@ const shuffle = (array) =>
     .sort((a, b) => a.sort - b.sort)
     .map((a) => a.value);
 
+const TIMER = 15;
+
 export default {
   mounted() {
     this.preloadImages();
@@ -165,29 +167,31 @@ export default {
         "Г3",
         "Г4",
       ],
-      imageHiddenBase: "https://via.placeholder.com/100x100.png?text=",
+      imageHiddenBase: "https://placehold.co/200x200/CECECE/000?text=",
       currentTeam: "",
       roundsCompleted: {
         Играч1: 0,
         Играч2: 0,
       },
-      currentGame: {
+      currentRound: {
         player: "",
+        score: 0,
+      },
+      currentGame: {
         combs: [],
-        misses: 0,
       },
       leaderboard: [],
       summaryResults: [],
       round: 1,
       summaryMode: null,
-      timer: 15,
+      timer: TIMER,
       timerRunning: false,
     };
   },
   computed: {
     getTextColor() {
       return function(teamName) {
-        return teamName === "Играч1" ? "text-red-500" : "text-green-500";
+        return teamName === "Играч1" ? "text-purple-400" : "text-pink-500";
       };
     },
     score() {
@@ -200,10 +204,16 @@ export default {
       return this.score === this.currentGame.combs.length / 2;
     },
     lost() {
-      return this.timer === 0;
+      return !this.won && this.timer === 0;
     },
     gameover() {
-      return this.won || this.lost;
+      return this.won;
+      // return (
+      //   this.won ||
+      //   (this.lost &&
+      //     this.roundsCompleted.Играч1 === ROUNDS &&
+      //     this.roundsCompleted.Играч2 === ROUNDS)
+      // );
     },
     sortedLeaderboard() {
       return this.leaderboard.sort((plA, plB) => {
@@ -222,37 +232,32 @@ export default {
     },
   },
   watch: {
-    gameover(val) {
-      if (val) {
+    timer(val) {
+      if (val === 0) {
         this.sortedLeaderboard.push({
-          name: this.currentGame.player,
+          name: this.currentRound.player,
           won: this.won,
-          score: this.score,
+          score: this.currentRound.score,
           lives: this.lives,
           round: this.round,
         });
 
-        this.currentGame.combs.forEach((comb) => {
-          if (comb.status === "hit" && !comb.hidden) {
-            comb.status = "ready";
-            comb.hidden = true;
-          }
-        });
+        // this.currentGame.combs.forEach((comb) => {
+        //   if (comb.status === "hit" && !comb.hidden) {
+        //     comb.status = "ready";
+        //     comb.hidden = true;
+        //   }
+        // });
 
-        if (val) {
-          const playerName = this.currentGame.player;
-          this.roundsCompleted[playerName]++;
+        const playerName = this.currentRound.player;
+        this.roundsCompleted[playerName]++;
 
-          if (
-            this.roundsCompleted.Играч1 === 5 &&
-            this.roundsCompleted.Играч2 === 5
-          ) {
-            this.showSummary();
-          } else {
-            setTimeout(() => {
-              this.startGame();
-            }, 3000);
-          }
+        if (this.gameover) {
+          this.showSummary();
+        } else {
+          setTimeout(() => {
+            this.startRound();
+          }, 3000);
         }
       }
     },
@@ -276,24 +281,41 @@ export default {
       });
     },
     revealCombs() {
-      if (this.currentGame.combs) {
+      this.currentGame.combs.forEach((comb) => {
+        comb.hidden = false;
+      });
+
+      setTimeout(() => {
         this.currentGame.combs.forEach((comb) => {
-          comb.hidden = false;
+          comb.hidden = true;
         });
-      }
+      }, 3000);
     },
 
     handleKeyDown(event) {
       if (event.key === "Enter") {
         if (!this.timerRunning) {
-          this.startGame();
+          this.generateCombs();
+          this.round = 1;
+          this.currentTeam = "";
+          this.roundsCompleted = {
+            Играч1: 0,
+            Играч2: 0,
+          };
+          this.currentRound = {
+            player: "",
+            score: 0,
+          };
+          this.leaderboard = [];
+          this.summaryResults = [];
+          this.startRound();
           this.revealCombs();
         }
       }
     },
     startTimer() {
       this.timerRunning = true;
-      this.timer = 15;
+      this.timer = TIMER;
       this.timerInterval = setInterval(() => {
         this.timer--;
         if (this.timer === 0) {
@@ -344,53 +366,51 @@ export default {
       };
     },
 
-    startGame() {
+    startRound() {
       if (this.currentTeam === "Играч2") {
         this.round++;
       }
       this.currentTeam = this.currentTeam === "Играч1" ? "Играч2" : "Играч1";
-      this.currentGame = {
+      this.currentRound = {
         player: this.currentTeam,
-        combs: [],
-        misses: 0,
+        score: 0,
       };
-      this.generateCombs();
+      this.currentGame.combs.forEach((comb) => {
+        if (comb.status === "selected") {
+          comb.hidden = true;
+          comb.status = "ready";
+        }
+      });
       this.startTimer();
       this.summaryMode = null;
     },
     generateCombs() {
-      const combs = shuffle(
-        this.images
-          .map((image, idx) => {
-            const imagex = image;
-            const comb = {
-              id: idx,
-              image: imagex.default,
-              status: "ready",
-              hidden: false,
-            };
-            return [comb, comb];
-          })
-          .flat()
-      ).map((x, idx) => ({ ...x, idx }));
+      const combs = this.images
+        .map((image, idx) => {
+          const imagex = image;
+          const comb = {
+            id: idx,
+            image: imagex.default,
+            status: "ready",
+            hidden: true,
+          };
+          return [comb, comb];
+        })
+        .flat();
 
-      this.currentGame.combs = combs.map((comb, idx) => {
-        return {
-          ...comb,
-          letter: this.sortedLetters[idx],
-        };
-      });
-
-      setTimeout(() => {
-        this.currentGame.combs.forEach((comb) => {
-          comb.hidden = true;
-        });
-      }, 3000);
+      this.currentGame.combs = shuffle(combs)
+        .map((comb, idx) => {
+          return {
+            ...comb,
+            letter: this.sortedLetters[idx],
+          };
+        })
+        .map((x, idx) => ({ ...x, idx }));
       this.combsGenerated = true;
     },
 
     makeMove(comb) {
-      if (this.gameover) return;
+      if (this.gameover || !this.timerRunning) return;
       if (["hit", "miss"].includes(comb.status)) return;
 
       const curSelected = this.currentGame.combs.find(
@@ -408,7 +428,6 @@ export default {
           curSelected.hidden = false;
 
           if (resultStatus === "miss") {
-            this.currentGame.misses += 1;
             setTimeout(() => {
               comb.status = "ready";
               comb.hidden = true;
@@ -416,10 +435,14 @@ export default {
               curSelected.hidden = true;
             }, 1000);
           } else {
-            this.currentGame.misses = Math.max(this.currentGame.misses - 1, 0);
+            this.currentRound.score += 1;
           }
+          this.stopTimer();
+          this.timer = 0;
         } else {
+          curSelected.status = "ready";
           comb.status = "ready";
+          curSelected.hidden = true;
         }
       }
     },
@@ -428,6 +451,10 @@ export default {
 </script>
 
 <style lang="postcss">
+letters {
+  color: black;
+}
+
 body {
   @apply bg-blue-800 text-xl font-bold font-serif;
 }
