@@ -81,7 +81,7 @@
             <div style="display: flex flex direction:row  ;">
               <div class="flex justify-between">
                 <span
-                  class="flex-1 mt-2 ml-6 text-3xl"
+                  class="flex-1 mt-2  text-3xl"
                   :class="getTextColor(summaryMode.zimzName)"
                   >{{ summaryMode.zimzName }}</span
                 >
@@ -91,14 +91,14 @@
                   >{{ summaryMode.zimzResult }}</span
                 >
                 <span
-                  class="flex-1 mt-2  text-3xl"
+                  class="flex-1 mr-4 mt-2  text-3xl"
                   :class="getTextColor(summaryMode.zimzName)"
                   >{{ summaryMode.zimzScore }}</span
                 >
               </div>
               <div class="flex justify-between">
                 <span
-                  class="flex-1 ml-6 mt-2 text-3xl"
+                  class="flex-1 mt-2 text-3xl"
                   :class="getTextColor(summaryMode.hamiltonName)"
                   >{{ summaryMode.hamiltonName }}</span
                 >
@@ -108,7 +108,7 @@
                   >{{ summaryMode.hamiltonResult }}</span
                 >
                 <span
-                  class="flex-1 mt-2 text-3xl"
+                  class="flex-1 mr-4 mt-2 text-3xl"
                   :class="getTextColor(summaryMode.hamiltonName)"
                   >{{ summaryMode.hamiltonScore }}</span
                 >
