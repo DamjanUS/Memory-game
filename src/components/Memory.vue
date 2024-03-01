@@ -91,7 +91,7 @@
                   >{{ summaryMode.zimzResult }}</span
                 >
                 <span
-                  class="flex-1 mr-4 mt-2  text-3xl"
+                  class="flex-1 mr-5 mt-2  text-3xl"
                   :class="getTextColor(summaryMode.zimzName)"
                   >{{ summaryMode.zimzScore }}</span
                 >
@@ -108,7 +108,7 @@
                   >{{ summaryMode.hamiltonResult }}</span
                 >
                 <span
-                  class="flex-1 mr-4 mt-2 text-3xl"
+                  class="flex-1 mr-5 mt-2 text-3xl"
                   :class="getTextColor(summaryMode.hamiltonName)"
                   >{{ summaryMode.hamiltonScore }}</span
                 >
